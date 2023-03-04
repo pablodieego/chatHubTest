@@ -1,4 +1,4 @@
-version: '3.2'
+version: '2.1'
 services:  
   rabbitmq:    
     image: rabbitmq:3-management    
@@ -13,6 +13,10 @@ services:
         ACCEPT_EULA: "Y"
     ports:         
       - 5004:1433
+    healthcheck:
+        test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-Usa", "-PpassPabloJobSity123!", "-Q", "select 1"]
+        interval: 1s
+        retries: 20
 
   jobsity-chat-bot:   
     ports: 
@@ -29,8 +33,10 @@ services:
     ports: 
       - 5001:80
     depends_on: 
-      - db
-      - rabbitmq             
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
     environment:
       ASPNETCORE_ENVIRONMENT: "Docker"
     build:
